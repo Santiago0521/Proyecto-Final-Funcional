@@ -19,10 +19,9 @@ nota.
 
 | Nombre completo | Código |
 |---|---|
-| | |
-| | |
-| | |
-| | |
+| Santiago Vasquez Valencia | 202611028 |
+|  |  |
+|  |  |
 
 ## El problema, en una línea
 
