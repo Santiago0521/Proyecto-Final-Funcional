@@ -18,7 +18,7 @@ commits que tenga. Si falta alguno, la entrega se sanciona con el 20 % de la
 nota.
 
 | Nombre completo | Código |
-|---|---|
+| Valentina Cifuentes Badillo | 202611030 |
 | Santiago Vasquez Valencia | 202611028 |
 |  |  |
 |  |  |
