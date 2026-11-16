@@ -140,5 +140,11 @@ object Similitud {
 
   /** Solución con índice: compara solo las parejas candidatas. */
   def detectarConIndice(c: Corpus, k: Int, umbral: Double,
-                        p: Int): Vector[Medicion] = ???
+                        p: Int): Vector[Medicion] = {
+                          val hs = huellas(c, k)
+                          val idx = indiceInvertido(hs)
+                          val ps = parejasCandidatas(idx)
+                          val ss = similitudes(hs, ps)
+                          ranking(ss, umbral, p)
+                        }
 }
