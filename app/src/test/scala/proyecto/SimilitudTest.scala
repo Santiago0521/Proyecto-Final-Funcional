@@ -97,4 +97,219 @@ class SimilitudTest extends AnyFunSuite {
     assert(detectarDirecto(c1, 3, 0.2, 5) == detectarConIndice(c1, 3, 0.2, 5))
     assert(detectarDirecto(c2, 3, 0.3, 5) == detectarConIndice(c2, 3, 0.3, 5))
   }
+
+  //Test parejasCandidatas
+  test("parejasCandidatas: un índice vacío no produce parejas") {
+    val idx: Indice = Map.empty
+
+    assert(parejasCandidatas(idx).isEmpty)
+  }
+
+  test("parejasCandidatas: un documento asociado a un fragmento no forma pareja") {
+    val idx: Indice = Map(
+      Vector("gato", "duerme") -> Set(4)
+    )
+
+    assert(parejasCandidatas(idx).isEmpty)
+  }
+
+  test("parejasCandidatas: tres documentos que comparten un fragmento generan tres parejas") {
+    val idx: Indice = Map(
+      Vector("sol", "brilla") -> Set(1, 3, 5)
+    )
+
+    assert(parejasCandidatas(idx) ==
+      Vector((1, 3), (1, 5), (3, 5)))
+  }
+
+  test("parejasCandidatas: compartir varios fragmentos no duplica parejas") {
+    val idx: Indice = Map(
+      Vector("la", "luna") -> Set(0, 2),
+      Vector("luna", "brilla") -> Set(0, 2)
+    )
+
+    assert(parejasCandidatas(idx) == Vector((0, 2)))
+  }
+
+  test("parejasCandidatas: ordena las parejas y evita invertir sus índices") {
+    val idx: Indice = Map(
+      Vector("rio", "fluye") -> Set(8, 3),
+      Vector("mar", "calma") -> Set(6, 1)
+    )
+
+    assert(parejasCandidatas(idx) ==
+      Vector((1, 6), (3, 8)))
+  }
+
+  // Test ranking
+  test("ranking: descarta mediciones inferiores al umbral") {
+    val ms: Vector[Medicion] = Vector(
+      (0, 1, 0.2),
+      (0, 2, 0.8),
+      (1, 2, 0.5),
+      (2, 3, 0.1)
+    )
+
+    assert(ranking(ms, 0.5, 10) ==
+      Vector((0, 2, 0.8), (1, 2, 0.5)))
+  }
+
+  test("ranking: incluye mediciones exactamente iguales al umbral") {
+    val ms: Vector[Medicion] = Vector(
+      (0, 1, 0.4),
+      (0, 2, 0.6),
+      (1, 2, 0.7)
+    )
+
+    assert(ranking(ms, 0.4, 10) ==
+      Vector((1, 2, 0.7), (0, 2, 0.6), (0, 1, 0.4)))
+  }
+
+  test("ranking: desempata por los índices de los documentos") {
+    val ms: Vector[Medicion] = Vector(
+      (3, 5, 0.8),
+      (1, 4, 0.8),
+      (1, 2, 0.8),
+      (2, 3, 0.8)
+    )
+
+    assert(ranking(ms, 0.5, 10) ==
+      Vector(
+        (1, 2, 0.8),
+        (1, 4, 0.8),
+        (2, 3, 0.8),
+        (3, 5, 0.8)
+      ))
+  }
+
+  test("ranking: devuelve solamente los primeros p resultados") {
+    val ms: Vector[Medicion] = Vector(
+      (0, 1, 0.3),
+      (0, 2, 0.9),
+      (1, 2, 0.6),
+      (2, 3, 0.7)
+    )
+
+    assert(ranking(ms, 0.0, 2) ==
+      Vector((0, 2, 0.9), (2, 3, 0.7)))
+  }
+
+  test("ranking: devuelve un vector vacío cuando p es cero o negativo") {
+    val ms: Vector[Medicion] = Vector(
+      (0, 1, 0.9),
+      (1, 2, 0.7)
+    )
+
+    assert(ranking(ms, 0.0, 0).isEmpty)
+    assert(ranking(ms, 0.0, -2).isEmpty)
+  }
+
+  // Test detectarDirecto
+  test("detectarDirecto: un corpus vacío no produce resultados") {
+    val c: Corpus = Vector.empty
+
+    assert(detectarDirecto(c, 2, 0.1, 5).isEmpty)
+  }
+
+  test("detectarDirecto: un único documento no genera comparaciones") {
+    val c: Corpus = Vector(
+      ("d0", Vector("sol", "brilla", "hoy"))
+    )
+
+    assert(detectarDirecto(c, 2, 0.0, 5).isEmpty)
+  }
+
+  test("detectarDirecto: dos documentos idénticos tienen similitud uno") {
+    val c: Corpus = Vector(
+      ("d0", Vector("sol", "brilla", "hoy")),
+      ("d1", Vector("sol", "brilla", "hoy"))
+    )
+
+    assert(detectarDirecto(c, 2, 1.0, 5) ==
+      Vector((0, 1, 1.0)))
+  }
+
+  test("detectarDirecto: dos documentos sin fragmentos compartidos tienen similitud cero") {
+    val c: Corpus = Vector(
+      ("d0", Vector("sol", "brilla", "hoy")),
+      ("d1", Vector("luna", "duerme", "noche"))
+    )
+
+    assert(detectarDirecto(c, 2, 0.0, 5) ==
+      Vector((0, 1, 0.0)))
+
+    assert(detectarDirecto(c, 2, 0.1, 5).isEmpty)
+  }
+
+  test("detectarDirecto: aplica el umbral y limita la cantidad de resultados") {
+    val c: Corpus = Vector(
+      ("d0", Vector("a", "b", "c")),
+      ("d1", Vector("a", "b", "c")),
+      ("d2", Vector("a", "b", "d")),
+      ("d3", Vector("x", "y", "z"))
+    )
+
+    assert(detectarDirecto(c, 2, 0.5, 1) ==
+      Vector((0, 1, 1.0)))
+  }
+
+  // Test detectarConIndice
+  test("detectarConIndice: un corpus vacío no produce resultados") {
+    val c: Corpus = Vector.empty
+
+    assert(detectarConIndice(c, 2, 0.1, 5).isEmpty)
+  }
+
+  test("detectarConIndice: documentos sin suficientes palabras no generan candidatas") {
+    val c: Corpus = Vector(
+      ("d0", Vector("sol")),
+      ("d1", Vector("sol")),
+      ("d2", Vector("luna"))
+    )
+
+    assert(detectarConIndice(c, 2, 0.1, 5).isEmpty)
+  }
+
+  test("detectarConIndice: dos documentos con fragmentos compartidos se comparan correctamente") {
+    val c: Corpus = Vector(
+      ("d0", Vector("a", "b", "c", "d")),
+      ("d1", Vector("a", "b", "c", "x"))
+    )
+
+    assert(detectarConIndice(c, 2, 0.5, 5) ==
+      Vector((0, 1, 0.5)))
+  }
+
+  test("detectarConIndice: excluye documentos sin fragmentos compartidos") {
+    val c: Corpus = Vector(
+      ("d0", Vector("sol", "brilla", "hoy")),
+      ("d1", Vector("luna", "duerme", "noche")),
+      ("d2", Vector("mar", "mueve", "olas"))
+    )
+
+    assert(detectarConIndice(c, 2, 0.1, 5).isEmpty)
+  }
+
+  test("detectarConIndice: coincide con el detector directo en un corpus con varias candidatas") {
+    val c: Corpus = Vector(
+      ("d0", Vector("a", "b", "c", "d")),
+      ("d1", Vector("a", "b", "c", "x")),
+      ("d2", Vector("a", "b", "y", "z")),
+      ("d3", Vector("m", "n", "o", "p"))
+    )
+
+    val esperado: Vector[Medicion] = Vector(
+      (0, 1, 0.5),
+      (0, 2, 0.2),
+      (1, 2, 0.2)
+    )
+
+    assert(detectarConIndice(c, 2, 0.15, 10) == esperado)
+
+    assert(
+      detectarConIndice(c, 2, 0.15, 10) ==
+      detectarDirecto(c, 2, 0.15, 10)
+    )
+  }
+
 }
