@@ -82,7 +82,9 @@ object Similitud {
    * Los t - k + 1 fragmentos de k palabras consecutivas, en el orden en que
    * aparecen; el vector vacío si el documento tiene menos de k palabras.
    */
-  def fragmentos(ts: Vector[String], k: Int): Vector[Fragmento] = ???
+  def fragmentos(ts: Vector[String], k: Int): Vector[Fragmento] = 
+    if (k <= 0 || ts.length < k) Vector.empty
+    else ts.sliding(k).map(_.toVector).toVector
 
   /** El conjunto de fragmentos del documento: un repetido cuenta una vez. */
   def huella(d: Documento, k: Int): Huella = ???
