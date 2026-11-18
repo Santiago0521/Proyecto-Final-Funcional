@@ -20,7 +20,7 @@ nota.
 | Nombre completo | Código |
 | Valentina Cifuentes Badillo | 202611030 |
 | Santiago Vasquez Valencia | 202611028 |
-|  |  | 
+|  |  |
 
 ## El problema, en una línea
 
