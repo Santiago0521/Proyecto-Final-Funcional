@@ -75,7 +75,7 @@ object Similitud {
     texto.toLowerCase(java.util.Locale.ROOT)
       .split("[^\\p{L}\\p{N}]+")
       .filter(_.nonEmpty)
-      .toVector
+      .toVector   
 
   /**
    * Los t - k + 1 fragmentos de k palabras consecutivas, en el orden en que
