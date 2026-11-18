@@ -87,7 +87,8 @@ object Similitud {
     else ts.sliding(k).map(_.toVector).toVector
 
   /** El conjunto de fragmentos del documento: un repetido cuenta una vez. */
-  def huella(d: Documento, k: Int): Huella = ???
+  def huella(d: Documento, k: Int): Huella = 
+    fragmentos(d._2, k).toSet
 
   /** Una huella por documento del corpus, en el mismo orden. */
   def huellas(c: Corpus, k: Int): Vector[Huella] = ???
