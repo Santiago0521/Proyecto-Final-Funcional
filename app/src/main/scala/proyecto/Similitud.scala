@@ -89,19 +89,37 @@ object Similitud {
    * Índice de Jaccard de dos huellas, el tamaño de la intersección sobre el de
    * la unión. Dos huellas vacías dan cero y no dividen por cero.
    */
-  def jaccard(h1: Huella, h2: Huella): Double = ???
+  def jaccard(h1: Huella, h2: Huella): Double = {
+    val interseccion = (h1 intersect h2).size
+    val union = h1.size + h2.size - interseccion
+    if (union == 0) 0.0 else interseccion.toDouble / union
+  }
 
   /** Las n (n - 1) / 2 parejas (i, j) con i < j, en orden. */
-  def parejas(n: Int): Vector[Pareja] = ???
+  def parejas(n: Int): Vector[Pareja] =
+    (for {
+      i <- 0 until n
+      j <- i + 1 until n
+    } yield (i, j)).toVector
 
   /** La similitud de cada pareja que se le pase, en el mismo orden. */
-  def similitudes(hs: Vector[Huella], ps: Vector[Pareja]): Vector[Medicion] = ???
+  def similitudes(hs: Vector[Huella], ps: Vector[Pareja]): Vector[Medicion] =
+    ps.map {
+      case (i, j) => (i, j, jaccard(hs(i), hs(j)))
+    }
 
   /**
    * El mapa de cada fragmento al conjunto de documentos donde aparece, con los
    * documentos identificados por su posición en el vector de huellas.
    */
-  def indiceInvertido(hs: Vector[Huella]): Indice = ???
+  def indiceInvertido(hs: Vector[Huella]): Indice =
+    hs.zipWithIndex.foldLeft(Map.empty[Fragmento, Set[Int]]) {
+      case (indice, (huella, posicion)) =>
+        huella.foldLeft(indice) {
+          case (actual, fragmento) =>
+            actual.updated(fragmento, actual.getOrElse(fragmento, Set.empty) + posicion)
+        }
+    }
 
   /**
    * Las parejas que comparten al menos un fragmento, sin repetir y ordenadas.
