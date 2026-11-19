@@ -71,19 +71,28 @@ object Similitud {
    * Pasa el texto a minúsculas, convierte en separador todo carácter que no
    * sea letra o dígito y devuelve el vector de palabras no vacías.
    */
-  def normalizar(texto: String): Vector[String] = ???
+  def normalizar(texto: String): Vector[String] = 
+    texto.toLowerCase(java.util.Locale.ROOT)
+      .split("[^\\p{L}\\p{N}]+")
+      .filter(_.nonEmpty)
+      .toVector   
+  
 
   /**
    * Los t - k + 1 fragmentos de k palabras consecutivas, en el orden en que
    * aparecen; el vector vacío si el documento tiene menos de k palabras.
    */
-  def fragmentos(ts: Vector[String], k: Int): Vector[Fragmento] = ???
+  def fragmentos(ts: Vector[String], k: Int): Vector[Fragmento] = 
+    if (k <= 0 || ts.length < k) Vector.empty
+    else ts.sliding(k).map(_.toVector).toVector
 
   /** El conjunto de fragmentos del documento: un repetido cuenta una vez. */
-  def huella(d: Documento, k: Int): Huella = ???
+  def huella(d: Documento, k: Int): Huella = 
+    fragmentos(d._2, k).toSet
 
   /** Una huella por documento del corpus, en el mismo orden. */
-  def huellas(c: Corpus, k: Int): Vector[Huella] = ???
+  def huellas(c: Corpus, k: Int): Vector[Huella] = 
+    c.map(d => huella(d, k))
 
   /**
    * Índice de Jaccard de dos huellas, el tamaño de la intersección sobre el de

@@ -40,10 +40,58 @@ class SimilitudTest extends AnyFunSuite {
     assert(normalizar("El Gato Duerme") == Vector("el", "gato", "duerme"))
   }
 
+  test("Propia normalizar 1: convierte letras mayúsculas a minúsculas") {
+    assert(normalizar("HOLA MUNDO") == Vector("hola", "mundo"))
+  }
+
+  test("Propia normalizar 2: elimina signos de puntuación") {
+    assert(normalizar("Hola, mundo. ¿Cómo estás?")
+      == Vector("hola", "mundo", "cómo", "estás"))
+  }
+
+  test("Propia normalizar 3: conserva los números") {
+    assert(normalizar("Scala 2026 version 3")
+      == Vector("scala", "2026", "version", "3"))
+  }
+
+  test("Propia normalizar 4: convierte símbolos y espacios en separadores") {
+    assert(normalizar("gato@perro#casa!sol")
+      == Vector("gato", "perro", "casa", "sol"))
+  }
+
+  test("Propia normalizar 5: devuelve vacío cuando no hay palabras") {
+    assert(normalizar("!!! ### ... 123_456")
+      == Vector("123", "456"))
+    assert(normalizar("   !!!   ") == Vector.empty)
+  }
+
   test("fragmentos: son las ventanas consecutivas, en orden") {
     val ts = Vector("a", "b", "c", "d")
     assert(fragmentos(ts, 2) ==
       Vector(Vector("a", "b"), Vector("b", "c"), Vector("c", "d")))
+  }
+
+  test("Propia fragmentos 1: genera un único fragmento") {
+    assert(fragmentos(Vector("a", "b", "c"), 3)
+      == Vector(Vector("a", "b", "c")))
+  }
+
+  test("Propia fragmentos 2: genera fragmentos de una palabra") {
+    assert(fragmentos(Vector("sol", "luna", "mar"), 1)
+      == Vector(Vector("sol"), Vector("luna"), Vector("mar")))
+  }
+
+  test("Propia fragmentos 3: devuelve vacío si k supera el tamaño") {
+    assert(fragmentos(Vector("a", "b"), 3) == Vector.empty)
+  }
+
+  test("Propia fragmentos 4: devuelve vacío para un vector vacío") {
+    assert(fragmentos(Vector.empty, 2) == Vector.empty)
+  }
+
+  test("Propia fragmentos 5: conserva el orden y los repetidos") {
+    assert(fragmentos(Vector("a", "b", "a", "c"), 2) ==
+      Vector(Vector("a", "b"), Vector("b", "a"), Vector("a", "c")))
   }
 
   test("huella: el ejemplo 1 tiene 4, 4 y 3 fragmentos") {
@@ -52,8 +100,79 @@ class SimilitudTest extends AnyFunSuite {
     assert(huella(d2, 3).size == 3)
   }
 
+  test("Propia huella 1: elimina fragmentos repetidos") {
+    val d: Documento = ("d1", Vector("a", "b", "a", "b"))
+    assert(huella(d, 2) == Set(Vector("a", "b"), Vector("b", "a")))
+  }
+
+  test("Propia huella 2: devuelve una huella vacía si k es mayor") {
+    val d: Documento = ("d2", Vector("casa", "perro"))
+    assert(huella(d, 3).isEmpty)
+  }
+
+  test("Propia huella 3: obtiene todos los fragmentos distintos") {
+    val d: Documento = ("d3", Vector("rojo", "azul", "verde"))
+    assert(huella(d, 2) ==
+      Set(Vector("rojo", "azul"), Vector("azul", "verde")))
+  }
+
+  test("Propia huella 4: con k igual a uno obtiene palabras distintas") {
+    val d: Documento = ("d4", Vector("sol", "luna", "sol"))
+    assert(huella(d, 1) == Set(Vector("sol"), Vector("luna")))
+  }
+
+  test("Propia huella 5: un documento vacío produce una huella vacía") {
+    val d: Documento = ("d5", Vector.empty)
+    assert(huella(d, 2).isEmpty)
+  }
+
   test("huellas: hay una huella por documento") {
     assert(huellas(c1, 3).length == 3)
+  }
+
+   test("Propia huellas 1: devuelve una huella por documento") {
+    val corpus: Corpus = Vector(
+      ("a", Vector("sol", "luna")),
+      ("b", Vector("mar", "cielo")),
+      ("c", Vector("perro", "gato"))
+    )
+    assert(huellas(corpus, 1).length == 3)
+  }
+
+  test("Propia huellas 2: conserva el orden de los documentos") {
+    val corpus: Corpus = Vector(
+      ("primero", Vector("a", "b")),
+      ("segundo", Vector("x", "y")),
+      ("tercero", Vector("m", "n"))
+    )
+    assert(huellas(corpus, 2) == Vector(
+      Set(Vector("a", "b")),
+      Set(Vector("x", "y")),
+      Set(Vector("m", "n"))
+    ))
+  }
+
+  test("Propia huellas 3: funciona con un corpus vacío") {
+    assert(huellas(Vector.empty, 2) == Vector.empty)
+  }
+
+  test("Propia huellas 4: admite documentos con huellas vacías") {
+    val corpus: Corpus = Vector(
+      ("a", Vector("sol")),
+      ("b", Vector("luna", "mar"))
+    )
+    assert(huellas(corpus, 3) == Vector(Set.empty, Set.empty))
+  }
+
+  test("Propia huellas 5: calcula correctamente huellas diferentes") {
+    val corpus: Corpus = Vector(
+      ("a", Vector("uno", "dos", "tres")),
+      ("b", Vector("cuatro", "cinco", "seis"))
+    )
+    assert(huellas(corpus, 2) == Vector(
+      Set(Vector("uno", "dos"), Vector("dos", "tres")),
+      Set(Vector("cuatro", "cinco"), Vector("cinco", "seis"))
+    ))
   }
 
   test("jaccard: ejemplo 2, las dos parejas dan 0.75 y 0.5") {
